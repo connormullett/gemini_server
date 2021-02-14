@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #define PORT 1965
+#define GEMINI_MAX_REQUEST_SIZE 1024
 
 int create_socket(int port) {
   int s;
@@ -74,15 +75,15 @@ void configure_context(SSL_CTX *ctx) {
   }
 }
 
-#define GEMINI_MAX_REQUEST 1024
-void read_request(int client, char *buffer) {
-  size_t recv_bytes = read(client, buffer, GEMINI_MAX_REQUEST - 1);
-  buffer[recv_bytes] = '\0';
+size_t read_request(int fd, char *buffer, size_t len_buffer) {
+  size_t bytes_read;
+  bytes_read = recv(fd, buffer, GEMINI_MAX_REQUEST_SIZE - 1, 0);
+  buffer[bytes_read] = '\0';
+  return bytes_read;
 }
 
 int main(int argc, char **argv) {
   int sock;
-  char request_buffer[GEMINI_MAX_REQUEST] = {0};
   char *request;
   SSL_CTX *ctx;
 
@@ -98,7 +99,7 @@ int main(int argc, char **argv) {
     struct sockaddr_in addr;
     uint len = sizeof(addr);
     SSL *ssl;
-    const char reply[] = "20 text/gemini\r\n";
+    const char response[] = "20 text/gemini\r\n";
 
     int client = accept(sock, (struct sockaddr *)&addr, &len);
     if (client < 0) {
@@ -106,17 +107,18 @@ int main(int argc, char **argv) {
       exit(EXIT_FAILURE);
     }
 
-    read_request(client, request_buffer);
-    printf("BUFFER :: %s\n", request_buffer);
-
     ssl = SSL_new(ctx);
     SSL_set_fd(ssl, client);
 
     if (SSL_accept(ssl) <= 0) {
       ERR_print_errors_fp(stderr);
     } else {
-      SSL_write(ssl, reply, strlen(reply));
-    }
+      SSL_write(ssl, response, strlen(response));
+    }  // handshake done
+
+    puts("handshake done");
+
+    size_t bytes_read = read_request(client, request, GEMINI_MAX_REQUEST_SIZE);
 
     SSL_shutdown(ssl);
     SSL_free(ssl);

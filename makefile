@@ -2,7 +2,7 @@
 CC=clang
 CFLAGS=-lssl -lcrypto
 DEBUG_FLAG=-g
-BINS=server
+BINS=server debug
 OBJS=server.o
 
 server: server.o
