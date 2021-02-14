@@ -9,4 +9,6 @@ Server is being tested with `Kristall` gemini browser.
 
 `openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365`
 
+## Building
+`make`
 

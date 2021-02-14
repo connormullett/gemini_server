@@ -27,7 +27,7 @@ int create_socket(int port) {
     exit(EXIT_FAILURE);
   }
 
-  printf("Listening on port %d", PORT);
+  printf("Listening on port %d\n", PORT);
   if (listen(s, 1) < 0) {
     perror("Unable to listen");
     exit(EXIT_FAILURE);
@@ -74,8 +74,16 @@ void configure_context(SSL_CTX *ctx) {
   }
 }
 
+#define GEMINI_MAX_REQUEST 1024
+void read_request(int client, char *buffer) {
+  size_t recv_bytes = read(client, buffer, GEMINI_MAX_REQUEST - 1);
+  buffer[recv_bytes] = '\0';
+}
+
 int main(int argc, char **argv) {
   int sock;
+  char request_buffer[GEMINI_MAX_REQUEST] = {0};
+  char *request;
   SSL_CTX *ctx;
 
   init_openssl();
@@ -97,6 +105,9 @@ int main(int argc, char **argv) {
       perror("Unable to accept");
       exit(EXIT_FAILURE);
     }
+
+    read_request(client, request_buffer);
+    printf("BUFFER :: %s\n", request_buffer);
 
     ssl = SSL_new(ctx);
     SSL_set_fd(ssl, client);
