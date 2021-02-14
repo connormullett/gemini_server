@@ -75,6 +75,29 @@ void configure_context(SSL_CTX *ctx) {
   }
 }
 
+char *read_index() {
+  FILE *fp;
+  long lSize;
+  char *buffer;
+
+  fp = fopen("contentroot/index.gmi", "rb");
+  if (!fp) perror("blah.txt"), exit(1);
+
+  fseek(fp, 0L, SEEK_END);
+  lSize = ftell(fp);
+  rewind(fp);
+
+  buffer = calloc(1, lSize + 1);
+  if (!buffer) fclose(fp), fputs("memory alloc fails", stderr), exit(1);
+
+  if (1 != fread(buffer, lSize, 1, fp))
+    fclose(fp), free(buffer), fputs("entire read fails", stderr), exit(1);
+
+  fclose(fp);
+
+  return buffer;
+}
+
 size_t read_request(int fd, char *buffer, size_t len_buffer) {
   size_t bytes_read;
   bytes_read = recv(fd, buffer, GEMINI_MAX_REQUEST_SIZE - 1, 0);
@@ -86,6 +109,10 @@ int main(int argc, char **argv) {
   int sock;
   char *request;
   SSL_CTX *ctx;
+  char *index = read_index();
+
+  // build full response
+  const char response[] = "20 text/gemini\r\n#This is my gemini server\r\n";
 
   init_openssl();
   ctx = create_context();
@@ -99,7 +126,6 @@ int main(int argc, char **argv) {
     struct sockaddr_in addr;
     uint len = sizeof(addr);
     SSL *ssl;
-    const char response[] = "20 text/gemini\r\n";
 
     int client = accept(sock, (struct sockaddr *)&addr, &len);
     if (client < 0) {
@@ -114,17 +140,14 @@ int main(int argc, char **argv) {
       ERR_print_errors_fp(stderr);
     } else {
       SSL_write(ssl, response, strlen(response));
-    }  // handshake done
-
-    puts("handshake done");
-
-    size_t bytes_read = read_request(client, request, GEMINI_MAX_REQUEST_SIZE);
+    }
 
     SSL_shutdown(ssl);
     SSL_free(ssl);
     close(client);
   }
 
+  free(index);
   close(sock);
   SSL_CTX_free(ctx);
   cleanup_openssl();
