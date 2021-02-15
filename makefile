@@ -1,18 +1,15 @@
 
 CC=clang
-CFLAGS=-lssl -lcrypto
-DEBUG_FLAG=-g
-BINS=server debug
+CFLAGS=-g
+LIBS=-lssl -lcrypto
+BINS=server
 OBJS=server.o
 
 server: server.o
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) $(LIBS) -o $@ $^
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $^
-
-debug: server.o
-	$(CC) $(CFLAGS) $(DEBUG_FLAG) -o $@ $^
 
 clean:
 	rm -r $(OBJS)
