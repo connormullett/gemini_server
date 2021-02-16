@@ -4,7 +4,7 @@
 
 #include <uriparser/Uri.h>
 
-char* get_path_from_request(char* request);
+const char* get_path_from_request(char* request);
 
 #endif
 
