@@ -3,7 +3,7 @@ CC=clang
 CFLAGS=-g
 LIBS=-lssl -lcrypto -luriparser
 BINS=server
-OBJS=server.o uri.c
+OBJS=server.o uri.c file.c
 
 server: $(OBJS)
 	$(CC) $(CFLAGS) $(LIBS) -o $@ $^

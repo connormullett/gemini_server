@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "file.h"
 #include "uri.h"
 
 #define PORT 1965
@@ -77,29 +78,6 @@ void configure_context(SSL_CTX *ctx) {
   }
 }
 
-char *loadfile() {
-  FILE *fp;
-  long lSize;
-  char *buffer;
-
-  fp = fopen("contentroot/index.gmi", "rb");
-  if (!fp) perror("blah.txt"), exit(1);
-
-  fseek(fp, 0L, SEEK_END);
-  lSize = ftell(fp);
-  rewind(fp);
-
-  buffer = calloc(1, lSize + 1);
-  if (!buffer) fclose(fp), fputs("memory alloc fails", stderr), exit(1);
-
-  if (1 != fread(buffer, lSize, 1, fp))
-    fclose(fp), free(buffer), fputs("entire read fails", stderr), exit(1);
-
-  fclose(fp);
-
-  return buffer;
-}
-
 void handle_connection(SSL *ssl) {
   char *request = malloc(GEMINI_MAX_REQUEST_SIZE * sizeof(char));
   memset(request, 0, GEMINI_MAX_REQUEST_SIZE);
@@ -109,10 +87,10 @@ void handle_connection(SSL *ssl) {
   /* strip request */
   request[strcspn(request, "\r\n")] = 0;
 
-  get_path_from_request(request);
+  const char *path = get_path_from_request(request);
 
   char *header = "20 text/gemini";
-  char *body = loadfile();
+  char *body = loadfile(path);
   size_t len_response = strlen(header) + strlen(body);
   char *response = malloc(sizeof(char) * len_response);
   memset(response, 0, len_response);
