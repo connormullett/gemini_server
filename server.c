@@ -6,6 +6,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "uri.h"
+
 #define PORT 1965
 #define GEMINI_MAX_REQUEST_SIZE 1024
 
@@ -100,8 +102,14 @@ char *loadfile() {
 
 void handle_connection(SSL *ssl) {
   char *request = malloc(GEMINI_MAX_REQUEST_SIZE * sizeof(char));
+  memset(request, 0, GEMINI_MAX_REQUEST_SIZE);
 
   SSL_read(ssl, request, GEMINI_MAX_REQUEST_SIZE);
+
+  /* strip request */
+  request[strcspn(request, "\r\n")] = 0;
+
+  get_path_from_request(request);
 
   char *header = "20 text/gemini";
   char *body = loadfile();

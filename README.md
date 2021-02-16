@@ -1,7 +1,9 @@
 
 # Basic Gemini Server
 
-Requires openssl for TLS usage.
+## Requires
+- openssl for TLS usage.
+- uriparser
 
 Server is being tested with `Kristall` gemini browser.
 

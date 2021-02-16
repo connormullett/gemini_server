@@ -1,11 +1,11 @@
 
 CC=clang
 CFLAGS=-g
-LIBS=-lssl -lcrypto
+LIBS=-lssl -lcrypto -luriparser
 BINS=server
-OBJS=server.o
+OBJS=server.o uri.c
 
-server: server.o
+server: $(OBJS)
 	$(CC) $(CFLAGS) $(LIBS) -o $@ $^
 
 %.o: %.c
