@@ -94,7 +94,6 @@ char *loadfile() {
     fclose(fp), free(buffer), fputs("entire read fails", stderr), exit(1);
 
   fclose(fp);
-  free(buffer);
 
   return buffer;
 }
@@ -110,8 +109,6 @@ void handle_connection(SSL *ssl) {
   char *response = malloc(sizeof(char) * len_response);
   memset(response, 0, len_response);
   sprintf(response, "%s\r\n%s\r\n", header, body);
-
-  puts(response);
 
   SSL_write(ssl, response, strlen(response));
 }
@@ -153,7 +150,6 @@ int main(int argc, char **argv) {
     close(client);
   }
 
-  free(index);
   close(sock);
   SSL_CTX_free(ctx);
   cleanup_openssl();
