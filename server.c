@@ -75,7 +75,7 @@ void configure_context(SSL_CTX *ctx) {
   }
 }
 
-char *read_index() {
+char *loadfile() {
   FILE *fp;
   long lSize;
   char *buffer;
@@ -94,25 +94,31 @@ char *read_index() {
     fclose(fp), free(buffer), fputs("entire read fails", stderr), exit(1);
 
   fclose(fp);
+  free(buffer);
 
   return buffer;
 }
 
-size_t read_request(int fd, char *buffer, size_t len_buffer) {
-  size_t bytes_read;
-  bytes_read = recv(fd, buffer, GEMINI_MAX_REQUEST_SIZE - 1, 0);
-  buffer[bytes_read] = '\0';
-  return bytes_read;
+void handle_connection(SSL *ssl) {
+  char *request = malloc(GEMINI_MAX_REQUEST_SIZE * sizeof(char));
+
+  SSL_read(ssl, request, GEMINI_MAX_REQUEST_SIZE);
+
+  char *header = "20 text/gemini";
+  char *body = loadfile();
+  size_t len_response = strlen(header) + strlen(body);
+  char *response = malloc(sizeof(char) * len_response);
+  memset(response, 0, len_response);
+  sprintf(response, "%s\r\n%s\r\n", header, body);
+
+  puts(response);
+
+  SSL_write(ssl, response, strlen(response));
 }
 
 int main(int argc, char **argv) {
   int sock;
-  char *request;
   SSL_CTX *ctx;
-  char *index = read_index();
-
-  // build full response
-  const char response[] = "20 text/gemini\r\n#This is my gemini server\r\n";
 
   init_openssl();
   ctx = create_context();
@@ -121,7 +127,6 @@ int main(int argc, char **argv) {
 
   sock = create_socket(PORT);
 
-  /* Handle connections */
   while (1) {
     struct sockaddr_in addr;
     uint len = sizeof(addr);
@@ -139,7 +144,8 @@ int main(int argc, char **argv) {
     if (SSL_accept(ssl) <= 0) {
       ERR_print_errors_fp(stderr);
     } else {
-      SSL_write(ssl, response, strlen(response));
+      printf("request :: %d\n", client);
+      handle_connection(ssl);
     }
 
     SSL_shutdown(ssl);
