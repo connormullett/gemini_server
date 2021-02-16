@@ -1,7 +1,10 @@
 
 #include "uri.h"
 
-UriPathSegmentA* get_path_from_request(char* request) {
+#include <stdio.h>
+
+#define MAX_PATH_SIZE 1024
+char* get_path_from_request(char* request) {
   UriUriA uri;
   const char* errorPos;
 
@@ -10,10 +13,20 @@ UriPathSegmentA* get_path_from_request(char* request) {
     return NULL;
   }
 
+  /* index */
+  if (!uri.pathHead) {
+    return "index.gmi";
+  }
+
+  char* path = malloc(sizeof(char) * MAX_PATH_SIZE);
   UriPathSegmentA* head = uri.pathHead;
 
-  printf("PATH HEAD :: %s\n", head->text.first);
+  while (head != NULL) {
+    /* puts(head->text.first); */
+    head = head->next;
+  }
 
-  return NULL;
+  uriFreeUriMembersA(&uri);
+  return path;
 }
 

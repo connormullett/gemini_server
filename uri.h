@@ -4,7 +4,7 @@
 
 #include <uriparser/Uri.h>
 
-UriPathSegmentA* get_path_from_request(char* request);
+char* get_path_from_request(char* request);
 
 #endif
 
