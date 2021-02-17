@@ -9,11 +9,10 @@ const char* get_path_from_request(char* request) {
   const char* errorPos;
 
   if (uriParseSingleUriA(&uri, request, &errorPos) != URI_SUCCESS) {
-    perror("URI PARSE FAILED");
+    perror("[*] URI PARSE FAILED");
     return NULL;
   }
 
-  /* index */
   if (!uri.pathHead) {
     return "/index.gmi";
   }

@@ -8,6 +8,8 @@
 
 #include "file.h"
 
+void send_server_error_response(SSL* ssl);
+void send_bad_request_response(SSL* ssl);
 void send_not_found_response(SSL* ssl);
 void send_ok_response(SSL* ssl, ServerFile* server_file);
 

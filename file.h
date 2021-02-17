@@ -1,6 +1,7 @@
 #ifndef __FILE_H
 #define __FILE_H
 
+#include <errno.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -8,7 +9,7 @@
 #include <string.h>
 #include <unistd.h>
 
-enum file_status { OK, ERR_NOT_FOUND };
+enum file_status { OK, ERR_NOT_FOUND, SERVER_ERR };
 struct server_file {
   const char* page_content;
   enum file_status status;

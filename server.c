@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
 
     int client = accept(sock, (struct sockaddr *)&addr, &len);
     if (client < 0) {
-      perror("Unable to accept");
+      perror("[*] Unable to accept");
       exit(EXIT_FAILURE);
     }
 
@@ -125,7 +125,6 @@ int main(int argc, char **argv) {
     if (SSL_accept(ssl) <= 0) {
       ERR_print_errors_fp(stderr);
     } else {
-      printf("request :: %d\n", client);
       handle_connection(ssl);
     }
 
