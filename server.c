@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include "file.h"
+#include "response.h"
 #include "uri.h"
 
 #define PORT 1965
@@ -89,14 +90,11 @@ void handle_connection(SSL *ssl) {
 
   const char *path = get_path_from_request(request);
 
-  char *header = "20 text/gemini";
-  char *body = loadfile(path);
-  size_t len_response = strlen(header) + strlen(body);
-  char *response = malloc(sizeof(char) * len_response);
-  memset(response, 0, len_response);
-  sprintf(response, "%s\r\n%s\r\n", header, body);
+  ServerFile *server_file = loadfile(path);
 
-  SSL_write(ssl, response, strlen(response));
+  if (server_file->status == ERR_NOT_FOUND) return send_not_found_response(ssl);
+
+  send_ok_response(ssl, server_file);
 }
 
 int main(int argc, char **argv) {
