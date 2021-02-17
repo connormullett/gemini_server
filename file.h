@@ -2,6 +2,7 @@
 #define __FILE_H
 
 #include <errno.h>
+#include <libconfig.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>

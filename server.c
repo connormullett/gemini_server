@@ -1,4 +1,5 @@
 #include <arpa/inet.h>
+#include <libconfig.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <stdio.h>
@@ -9,9 +10,6 @@
 #include "file.h"
 #include "response.h"
 #include "uri.h"
-
-#define PORT 1965
-#define GEMINI_MAX_REQUEST_SIZE 1024
 
 int create_socket(int port) {
   int s;
@@ -32,7 +30,7 @@ int create_socket(int port) {
     exit(EXIT_FAILURE);
   }
 
-  printf("Listening on port %d\n", PORT);
+  printf("Listening on port %d\n", port);
   if (listen(s, 1) < 0) {
     perror("Unable to listen");
     exit(EXIT_FAILURE);
@@ -79,6 +77,7 @@ void configure_context(SSL_CTX *ctx) {
   }
 }
 
+#define GEMINI_MAX_REQUEST_SIZE 1024
 void handle_connection(SSL *ssl) {
   char *request = malloc(GEMINI_MAX_REQUEST_SIZE * sizeof(char));
   memset(request, 0, GEMINI_MAX_REQUEST_SIZE);
@@ -101,8 +100,24 @@ void handle_connection(SSL *ssl) {
   send_ok_response(ssl, server_file);
 }
 
+config_t *create_config() {
+  config_t cfg, *cf;
+
+  cf = &cfg;
+  config_init(cf);
+
+  if (!config_read_file(cf, "./server.cfg")) {
+    fprintf(stderr, "%s:%d - %s\n", config_error_file(cf),
+            config_error_line(cf), config_error_text(cf));
+    config_destroy(cf);
+    exit(EXIT_FAILURE);
+  }
+  return cf;
+}
+
 int main(int argc, char **argv) {
   int sock;
+  int port;
   SSL_CTX *ctx;
 
   init_openssl();
@@ -110,7 +125,13 @@ int main(int argc, char **argv) {
 
   configure_context(ctx);
 
-  sock = create_socket(PORT);
+  config_t *config = create_config();
+  if (!config_lookup_int(config, "port", &port)) {
+    printf("port :: %d\n", port);
+    puts("[*] port not found in server.cfg"), exit(EXIT_FAILURE);
+  }
+
+  sock = create_socket(port);
 
   while (1) {
     struct sockaddr_in addr;
@@ -137,6 +158,7 @@ int main(int argc, char **argv) {
     close(client);
   }
 
+  config_destroy(config);
   close(sock);
   SSL_CTX_free(ctx);
   cleanup_openssl();
