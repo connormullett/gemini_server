@@ -92,6 +92,10 @@ void handle_connection(SSL *ssl) {
 
   ServerFile *server_file = loadfile(path);
 
+  if (server_file->status == SERVER_ERR) {
+    return send_server_error_response(ssl);
+  }
+
   if (server_file->status == ERR_NOT_FOUND) return send_not_found_response(ssl);
 
   send_ok_response(ssl, server_file);

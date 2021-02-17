@@ -69,7 +69,7 @@ ServerFile *loadfile(const char *path) {
 
   char *buffer = read_file(full_path);
 
-  if (!buffer) return create_server_file(NULL, SERVER_ERR);
+  if (buffer == SERVER_FAIL) return create_server_file(NULL, SERVER_ERR);
 
   return create_server_file(buffer, OK);
 }
