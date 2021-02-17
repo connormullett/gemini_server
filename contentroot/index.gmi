@@ -3,5 +3,5 @@
 
 > Thanks for using this software
 
-=> Foo foo.gmi
+=> gemini://localhost/foo.gmi Foo Page
 

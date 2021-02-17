@@ -59,8 +59,6 @@ char *read_file(char *path) {
 ServerFile *loadfile(const char *path) {
   char *full_path = build_full_path((char *)path);
 
-  printf("[*] path %s\n", full_path);
-
   if (!file_exists(full_path)) {
     fprintf(stderr, "[*] %s does not exist\n", full_path);
     printf("%s\n", strerror(errno));
