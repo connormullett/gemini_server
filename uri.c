@@ -15,7 +15,7 @@ const char* get_path_from_request(char* request) {
 
   /* index */
   if (!uri.pathHead) {
-    return "index.gmi";
+    return "/index.gmi";
   }
 
   const char* path = uri.hostText.afterLast;

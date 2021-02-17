@@ -2,7 +2,7 @@
 #include "response.h"
 
 void send_not_found_response(SSL* ssl) {
-  const char* not_found = "51\r\n";
+  const char* not_found = "51 NOT FOUND\r\n";
   SSL_write(ssl, not_found, strlen(not_found));
 }
 

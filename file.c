@@ -1,20 +1,21 @@
 
 #include "file.h"
 
-bool file_exists(const char *path) {
+char *build_full_path(char *path) {
   char *content_root = "./contentroot";
 
-  size_t len_full_path = (strlen(content_root) + strlen(path));
-  char *full_path = malloc(sizeof(char) * len_full_path);
-  memset(full_path, 0, len_full_path);
+  char cwd[PATH_MAX];
+  getcwd(cwd, sizeof(cwd));
+  printf("CWD :: %s\n", cwd);
+
+  char *full_path = malloc(sizeof(char) * PATH_MAX);
+  memset(full_path, 0, PATH_MAX);
 
   sprintf(full_path, "%s%s", content_root, path);
-
-  puts(full_path);
-
-  free(full_path);
-  return true;
+  return full_path;
 }
+
+bool file_exists(const char *path) { return access(path, F_OK) ? true : false; }
 
 ServerFile *create_server_file(const char *content, FILE_STATUS status) {
   ServerFile *server_file = malloc(sizeof(ServerFile));
@@ -23,15 +24,10 @@ ServerFile *create_server_file(const char *content, FILE_STATUS status) {
   return server_file;
 }
 
-ServerFile *loadfile(const char *path) {
+char *read_file(char *path) {
   FILE *fp;
   long lSize;
   char *buffer;
-
-  if (!file_exists(path)) {
-    perror("file does not exist");
-    return create_server_file(NULL, ERR_NOT_FOUND);
-  }
 
   fp = fopen(path, "rb");
   if (!fp) perror("Error opening file"), exit(1);
@@ -47,6 +43,19 @@ ServerFile *loadfile(const char *path) {
     fclose(fp), free(buffer), fputs("entire read fails", stderr), exit(1);
 
   fclose(fp);
+  return buffer;
+}
+
+ServerFile *loadfile(const char *path) {
+  char *full_path = build_full_path((char *)path);
+
+  if (!file_exists(full_path)) {
+    perror("file does not exist");
+    return create_server_file(NULL, ERR_NOT_FOUND);
+  }
+
+  char *buffer = read_file(full_path);
 
   return create_server_file(buffer, OK);
 }
+
