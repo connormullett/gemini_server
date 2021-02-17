@@ -1,7 +1,7 @@
 
 CC=clang
 CFLAGS=-g -Wall
-LIBS=-lssl -lcrypto -luriparser
+LIBS=-lssl -lcrypto -luriparser -lconfig
 BINS=server
 OBJS=server.o uri.o file.o response.o
 
