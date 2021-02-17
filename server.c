@@ -11,7 +11,14 @@
 #include "response.h"
 #include "uri.h"
 
-int create_socket(int port) {
+config_t config;
+int port;
+const char *host;
+const char *content_root;
+const char *public_key;
+const char *private_key;
+
+int create_socket() {
   int s;
   struct sockaddr_in addr;
 
@@ -66,12 +73,12 @@ void configure_context(SSL_CTX *ctx) {
   SSL_CTX_set_ecdh_auto(ctx, 1);
 
   /* Set the key and cert */
-  if (SSL_CTX_use_certificate_file(ctx, "cert.pem", SSL_FILETYPE_PEM) <= 0) {
+  if (SSL_CTX_use_certificate_file(ctx, public_key, SSL_FILETYPE_PEM) <= 0) {
     ERR_print_errors_fp(stderr);
     exit(EXIT_FAILURE);
   }
 
-  if (SSL_CTX_use_PrivateKey_file(ctx, "key.pem", SSL_FILETYPE_PEM) <= 0) {
+  if (SSL_CTX_use_PrivateKey_file(ctx, private_key, SSL_FILETYPE_PEM) <= 0) {
     ERR_print_errors_fp(stderr);
     exit(EXIT_FAILURE);
   }
@@ -100,7 +107,7 @@ void handle_connection(SSL *ssl) {
   send_ok_response(ssl, server_file);
 }
 
-config_t *create_config() {
+void create_config() {
   config_t cfg, *cf;
 
   cf = &cfg;
@@ -112,26 +119,44 @@ config_t *create_config() {
     config_destroy(cf);
     exit(EXIT_FAILURE);
   }
-  return cf;
+
+  config = *cf;
+}
+
+void init_config_options() {
+  if (!config_lookup_int(&config, "port", &port)) {
+    puts("[*] port not found in server.cfg"), exit(EXIT_FAILURE);
+  }
+
+  if (!config_lookup_string(&config, "host", &host)) {
+    puts("[*] host not found in server.cfg"), exit(EXIT_FAILURE);
+  }
+
+  if (!config_lookup_string(&config, "content_root", &content_root)) {
+    puts("[*] content_root not found in server.cfg"), exit(EXIT_FAILURE);
+  }
+
+  if (!config_lookup_string(&config, "public_key", &public_key)) {
+    puts("[*] public_key not found in server.cfg"), exit(EXIT_FAILURE);
+  }
+
+  if (!config_lookup_string(&config, "private_key", &private_key)) {
+    puts("[*] private_key not found in server.cfg"), exit(EXIT_FAILURE);
+  }
 }
 
 int main(int argc, char **argv) {
   int sock;
-  int port;
   SSL_CTX *ctx;
+
+  create_config();
+  init_config_options();
 
   init_openssl();
   ctx = create_context();
-
   configure_context(ctx);
 
-  config_t *config = create_config();
-  if (!config_lookup_int(config, "port", &port)) {
-    printf("port :: %d\n", port);
-    puts("[*] port not found in server.cfg"), exit(EXIT_FAILURE);
-  }
-
-  sock = create_socket(port);
+  sock = create_socket();
 
   while (1) {
     struct sockaddr_in addr;
@@ -158,7 +183,7 @@ int main(int argc, char **argv) {
     close(client);
   }
 
-  config_destroy(config);
+  config_destroy(&config);
   close(sock);
   SSL_CTX_free(ctx);
   cleanup_openssl();

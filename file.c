@@ -2,7 +2,7 @@
 #include "file.h"
 
 char *build_full_path(char *path) {
-  char *content_root = "./contentroot";
+  extern const char *content_root;
 
   char *full_path = malloc(sizeof(char) * PATH_MAX);
   memset(full_path, 0, PATH_MAX);
