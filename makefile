@@ -16,5 +16,5 @@ build: $(OBJS)
 
 clean:
 	rm -r $(OBJS)
-	rm -r $(BINS)
+	rm -r server
 
