@@ -15,6 +15,31 @@ bool file_exists(const char *path) {
   return access(path, F_OK) == 0 ? true : false;
 }
 
+int is_dir(const char *path) {
+  printf("path %s\n", path);
+  struct stat statbuff;
+  stat(path, &statbuff);
+  return S_ISDIR(statbuff.st_mode);
+}
+
+char *build_dir_response(char *path) {
+  DIR *directory;
+  struct dirent *dir;
+  directory = opendir(path);
+
+  /* char *response = malloc(sizeof(char) * 1024); */
+  /* char *file_name; */
+
+  if (directory) {
+    while ((dir = readdir(directory)) != NULL) {
+      printf("%s\n", dir->d_name);
+    }
+    closedir(directory);
+  }
+
+  return NULL;
+}
+
 ServerFile *create_server_file(const char *content, FILE_STATUS status) {
   ServerFile *server_file = malloc(sizeof(ServerFile));
   server_file->status = status;
@@ -41,14 +66,14 @@ char *read_file(char *path) {
   buffer = calloc(1, lSize + 1);
   if (!buffer) {
     fclose(fp);
-    fputs("[*] memory alloc fails", stderr);
+    perror("[*] memory alloc fails");
     return SERVER_FAIL;
   }
 
   if (1 != fread(buffer, lSize, 1, fp)) {
     fclose(fp);
     free(buffer);
-    fputs("[*] entire read fails", stderr);
+    perror("[*] entire read fails\n");
     return SERVER_FAIL;
   }
 
@@ -61,9 +86,17 @@ ServerFile *loadfile(const char *path) {
 
   if (!file_exists(full_path)) {
     fprintf(stderr, "[*] %s does not exist\n", full_path);
-    printf("%s\n", strerror(errno));
     return create_server_file(NULL, ERR_NOT_FOUND);
   }
+
+  if (is_dir(full_path) == 0) {
+    puts("is_dir TRUE");
+    char *content = build_dir_response(full_path);
+    return create_server_file(content, OK);
+  }
+
+  puts("is_dir FALSE");
+  exit(1);
 
   printf("[*] request %s\n", path);
 
