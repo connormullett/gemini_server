@@ -15,7 +15,7 @@ bool file_exists(const char *path) {
   return access(path, F_OK) == 0 ? true : false;
 }
 
-int is_dir(const char *path) {
+int is_file(const char *path) {
   struct stat statbuf;
   if (stat(path, &statbuf) != 0) return 0;
   return S_ISDIR(statbuf.st_mode);
@@ -23,18 +23,25 @@ int is_dir(const char *path) {
 
 char *build_dir_response(char *path) {
   DIR *directory;
+
   struct dirent *dir;
   directory = opendir(path);
 
-  /* char *response = malloc(sizeof(char) * 1024); */
-  /* char *file_name; */
+  char *content = malloc(sizeof(char) * 1024);
+  char *file_name = malloc(sizeof(char) * 1024);
 
   if (directory) {
     while ((dir = readdir(directory)) != NULL) {
-      printf("%s\n", dir->d_name);
+      memset(file_name, 0, 1024);
+      sprintf(file_name, "=> gemini://localhost/%s %s\n", path, dir->d_name);
+      file_name[strlen(dir->d_name)] = 0;
+      printf("file name :: %s\n", file_name);
+      strncat(content, file_name, strlen(file_name));
     }
     closedir(directory);
   }
+
+  printf("Content :: %s\n", content);
 
   return NULL;
 }
@@ -77,6 +84,7 @@ char *read_file(char *path) {
   }
 
   fclose(fp);
+
   return buffer;
 }
 
@@ -88,7 +96,7 @@ ServerFile *loadfile(const char *path) {
     return create_server_file(NULL, ERR_NOT_FOUND);
   }
 
-  if (is_dir(full_path)) {
+  if (is_file(full_path)) {
     char *content = build_dir_response(full_path);
     return create_server_file(content, OK);
   }

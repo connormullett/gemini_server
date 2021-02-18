@@ -25,7 +25,7 @@ char* build_dir_response(char* path);
 char* build_full_path(char* path);
 bool file_exists(const char* path);
 ServerFile* create_server_file(const char* content, FILE_STATUS status);
-char* read_file(char* path);
 ServerFile* loadfile(const char* path);
+char* read_file(char* path);
 
 #endif
