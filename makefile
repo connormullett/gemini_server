@@ -1,8 +1,8 @@
 
 CC=clang
 CFLAGS=-g -Wall
+OPTIMIZE_FLAGS=-o2
 LIBS=-lssl -lcrypto -luriparser -lconfig
-BINS=server
 OBJS=server.o uri.o file.o response.o
 
 server: $(OBJS)
@@ -10,6 +10,9 @@ server: $(OBJS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $^
+
+build: $(OBJS)
+	$(CC) $(OPTIMIZE_FLAGS) $(LIBS) -o server $^
 
 clean:
 	rm -r $(OBJS)
