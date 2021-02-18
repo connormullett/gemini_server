@@ -37,7 +37,7 @@ int create_socket() {
     exit(EXIT_FAILURE);
   }
 
-  printf("Listening on port %d\n", port);
+  printf("[*] listening on port %d\n", port);
   if (listen(s, 1) < 0) {
     perror("Unable to listen");
     exit(EXIT_FAILURE);

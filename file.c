@@ -16,10 +16,9 @@ bool file_exists(const char *path) {
 }
 
 int is_dir(const char *path) {
-  printf("path %s\n", path);
-  struct stat statbuff;
-  stat(path, &statbuff);
-  return S_ISDIR(statbuff.st_mode);
+  struct stat statbuf;
+  if (stat(path, &statbuf) != 0) return 0;
+  return S_ISDIR(statbuf.st_mode);
 }
 
 char *build_dir_response(char *path) {
@@ -89,14 +88,10 @@ ServerFile *loadfile(const char *path) {
     return create_server_file(NULL, ERR_NOT_FOUND);
   }
 
-  if (is_dir(full_path) == 0) {
-    puts("is_dir TRUE");
+  if (is_dir(full_path)) {
     char *content = build_dir_response(full_path);
     return create_server_file(content, OK);
   }
-
-  puts("is_dir FALSE");
-  exit(1);
 
   printf("[*] request %s\n", path);
 

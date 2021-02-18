@@ -1,7 +1,7 @@
 
 CC=clang
 CFLAGS=-g -Wall
-OPTIMIZE_FLAGS=-o2
+OPTIMIZE_FLAGS=-o3
 LIBS=-lssl -lcrypto -luriparser -lconfig
 OBJS=server.o uri.o file.o response.o
 
