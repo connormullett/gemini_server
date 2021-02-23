@@ -21,29 +21,47 @@ int is_file(const char *path) {
   return S_ISDIR(statbuf.st_mode);
 }
 
+char *get_last_name_in_path(char *path) {
+  int init_size = strlen(path);
+  char delim[] = "/";
+
+  char *path_copy = malloc(sizeof(char) * init_size);
+  strncpy(path_copy, path, init_size);
+
+  char *cur_token = strtok(path_copy, delim);
+  char *last;
+
+  while (cur_token != NULL) {
+    last = cur_token;
+    cur_token = strtok(NULL, delim);
+  }
+
+  return last;
+}
+
 char *build_dir_response(char *path) {
   DIR *directory;
 
   struct dirent *dir;
   directory = opendir(path);
 
-  char *content = malloc(sizeof(char) * 1024);
-  char *file_name = malloc(sizeof(char) * 1024);
+  char *content = malloc(sizeof(char) * PATH_MAX);
+  char file_name[PATH_MAX] = {0};
+
+  char *current_dir_short_name = get_last_name_in_path(path);
 
   if (directory) {
+    strncat(content, path, strlen(path));
     while ((dir = readdir(directory)) != NULL) {
-      memset(file_name, 0, 1024);
-      sprintf(file_name, "=> gemini://localhost/%s %s\n", path, dir->d_name);
-      file_name[strlen(dir->d_name)] = 0;
-      printf("file name :: %s\n", file_name);
+      // => bar/baz.gmi baz.gmi
+      sprintf(file_name, "=> %s/%s %s\n", current_dir_short_name, dir->d_name,
+              dir->d_name);
       strncat(content, file_name, strlen(file_name));
     }
     closedir(directory);
   }
 
-  printf("Content :: %s\n", content);
-
-  return NULL;
+  return content;
 }
 
 ServerFile *create_server_file(const char *content, FILE_STATUS status) {
