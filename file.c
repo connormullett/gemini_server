@@ -41,22 +41,25 @@ char *get_last_name_in_path(char *path) {
 
 char *build_dir_response(char *path) {
   DIR *directory;
-
   struct dirent *dir;
   directory = opendir(path);
 
   char *content = malloc(sizeof(char) * PATH_MAX);
-  char file_name[PATH_MAX] = {0};
+  memset(content, 0, strlen(content));
 
+  char link[PATH_MAX] = {0};
   char *current_dir_short_name = get_last_name_in_path(path);
 
+  char *content_path_header = malloc(sizeof(char) * PATH_MAX);
+
   if (directory) {
-    strncat(content, path, strlen(path));
+    sprintf(content_path_header, "# %s\n", current_dir_short_name);
+    strncat(content, content_path_header, strlen(content_path_header));
     while ((dir = readdir(directory)) != NULL) {
       // => bar/baz.gmi baz.gmi
-      sprintf(file_name, "=> %s/%s %s\n", current_dir_short_name, dir->d_name,
+      sprintf(link, "=> %s/%s %s\n", current_dir_short_name, dir->d_name,
               dir->d_name);
-      strncat(content, file_name, strlen(file_name));
+      strncat(content, link, strlen(link));
     }
     closedir(directory);
   }
